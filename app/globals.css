@@ -1,26 +1,328 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Clean, modern palette inspired by furniture e-commerce */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 15%;
+
+    /* Card and surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 15%;
+
+    /* Turquoise/Mint primary */
+    --primary: 174 62% 63%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 174 62% 53%;
+
+    /* Warm orange/terracotta */
+    --secondary: 18 80% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Coral/Pink accent */
+    --accent: 351 83% 82%;
+    --accent-foreground: 0 0% 15%;
+
+    /* Neutral tones */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 174 62% 63%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --radius: 0.375rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer utilities {
+
+  /* Background Utilities */
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-dark)) 100%);
+  }
+
+  .bg-secondary-gradient {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(18 80% 45%) 100%);
+  }
+
+  .bg-accent-gradient {
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(351 83% 72%) 100%);
+  }
+
+  /* Text Utilities */
+  .text-primary-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-dark)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary-dark));
+}
+
+/* Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Product Card */
+.product-card {
+  @apply bg-white rounded-lg overflow-hidden transition-all duration-300;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Category Card */
+.category-card {
+  @apply relative overflow-hidden rounded-lg;
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+  transform: scale(1.02);
+}
+
+/* Sale Badge */
+.sale-badge {
+  @apply absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded;
+  z-index: 10;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-primary text-white font-semibold px-6 py-3 rounded-lg transition-all;
+}
+
+.btn-primary:hover {
+  background-color: hsl(174 62% 53%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(77, 201, 201, 0.3);
+}
+
+.btn-secondary {
+  @apply bg-secondary text-white font-semibold px-6 py-3 rounded-lg transition-all;
+}
+
+.btn-secondary:hover {
+  background-color: hsl(18 80% 45%);
+}
+
+.btn-outline {
+  @apply border-2 border-foreground text-foreground font-semibold px-6 py-3 rounded-lg transition-all;
+}
+
+.btn-outline:hover {
+  @apply bg-foreground text-white;
+}
+
+/* Input Styles */
+input,
+textarea,
+select {
+  @apply w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+}
+
+/* Hero Section */
+.hero-section {
+  @apply relative overflow-hidden;
+  min-height: 500px;
+}
+
+/* Product Grid */
+.product-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8;
+}
+
+/* Section Heading */
+.section-heading {
+  @apply text-2xl md:text-3xl font-bold mb-6 text-center;
+}
+
+/* Price Display */
+.price-current {
+  @apply text-xl font-bold text-foreground;
+}
+
+.price-original {
+  @apply text-sm text-muted-foreground line-through ml-2;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.badge-sale {
+  @apply bg-red-500 text-white;
+}
+
+.badge-new {
+  @apply bg-primary text-white;
+}
+
+/* Container */
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Image Container */
+.image-container {
+  @apply relative overflow-hidden bg-gray-100;
+  padding-bottom: 100%;
+  /* 1:1 Aspect Ratio */
+}
+
+.image-container img {
+  @apply absolute inset-0 w-full h-full object-cover;
+}
+
+/* Banner */
+.banner {
+  @apply relative overflow-hidden rounded-xl p-8 md:p-12;
+}
+
+.banner-coral {
+  background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(351 83% 72%) 100%);
+}
+
+.banner-orange {
+  background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(18 80% 45%) 100%);
+}
+
+.banner-turquoise {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-dark)) 100%);
+}
+
+/* Footer */
+.footer {
+  @apply bg-gray-50 border-t border-border mt-16;
+}
+
+/* Navigation */
+.nav-link {
+  @apply text-foreground hover:text-primary transition-colors font-medium;
+}
+
+.nav-link.active {
+  @apply text-primary;
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Divider */
+.divider {
+  @apply h-px bg-border my-8;
 }
