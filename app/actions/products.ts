@@ -82,8 +82,17 @@ export async function updateProduct(productId: string, formData: FormData) {
         })
         .eq("product_id", productId);
 
+    // Get product slug for revalidation
+    const { data: product } = await supabase
+        .from("products")
+        .select("slug")
+        .eq("id", productId)
+        .single();
+
     revalidatePath("/admin/products");
-    revalidatePath(`/products/${productData.slug}`);
+    if (product?.slug) {
+        revalidatePath(`/products/${product.slug}`);
+    }
     return { success: true };
 }
 
