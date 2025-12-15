@@ -21,7 +21,7 @@ export function ProductActions({ product, inStock }: ProductActionsProps) {
     const handleAddToCart = () => {
         if (!inStock) return;
 
-        addItem({
+        const itemToAdd = {
             id: product.id,
             productId: product.id,
             name: product.name,
@@ -30,8 +30,12 @@ export function ProductActions({ product, inStock }: ProductActionsProps) {
             discountedPrice: product.discounted_price,
             image: product.images?.[0]?.image_url || "/placeholder.jpg",
             maxStock: product.inventory?.[0]?.quantity || 100,
-            quantity,
-        });
+        };
+
+        // Add item multiple times based on quantity
+        for (let i = 0; i < quantity; i++) {
+            addItem(itemToAdd);
+        }
 
         toast.success("Added to cart!", {
             description: `${quantity} x ${product.name} added to your cart.`,
