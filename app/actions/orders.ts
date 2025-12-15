@@ -114,8 +114,15 @@ export async function createOrder(formData: FormData) {
     redirect(`/orders/${order.id}?success=true`);
 }
 
-export async function updateOrderStatus(orderId: string, status: string) {
+export async function updateOrderStatus(orderId: string, formData: FormData): Promise<void> {
     const supabase = await createClient();
+
+    const status = formData.get("status") as string;
+
+    if (!status) {
+        console.error("Status is required");
+        return;
+    }
 
     const { error } = await supabase
         .from("orders")
@@ -123,10 +130,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
         .eq("id", orderId);
 
     if (error) {
-        return { error: error.message };
+        console.error("Failed to update order status:", error.message);
+        return;
     }
 
     revalidatePath("/admin/orders");
-    revalidatePath(`/orders/${orderId}`);
-    return { success: true };
+    revalidatePath(`/admin/orders/${orderId}`);
 }

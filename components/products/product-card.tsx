@@ -19,7 +19,7 @@ interface ProductCardProps {
         category?: {
             name: string;
             slug: string;
-        };
+        } | null;
         images?: Array<{
             image_url: string;
             alt_text: string | null;
@@ -27,6 +27,7 @@ interface ProductCardProps {
     };
     index?: number;
 }
+
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
@@ -134,8 +135,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                             whileTap={{ scale: 0.9 }}
                             onClick={handleWishlist}
                             className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-lg ${isWishlisted
-                                    ? "bg-red-500 text-white"
-                                    : "bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white"
+                                ? "bg-red-500 text-white"
+                                : "bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white"
                                 }`}
                         >
                             <Heart

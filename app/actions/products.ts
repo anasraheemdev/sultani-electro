@@ -46,7 +46,7 @@ export async function createProduct(formData: FormData) {
     redirect("/admin/products");
 }
 
-export async function updateProduct(productId: string, formData: FormData) {
+export async function updateProduct(productId: string, formData: FormData): Promise<void> {
     const supabase = await createClient();
 
     const productData = {
@@ -70,7 +70,8 @@ export async function updateProduct(productId: string, formData: FormData) {
         .eq("id", productId);
 
     if (error) {
-        return { error: error.message };
+        console.error("Failed to update product:", error.message);
+        return;
     }
 
     // Update inventory
@@ -93,7 +94,6 @@ export async function updateProduct(productId: string, formData: FormData) {
     if (product?.slug) {
         revalidatePath(`/products/${product.slug}`);
     }
-    return { success: true };
 }
 
 export async function deleteProduct(productId: string) {

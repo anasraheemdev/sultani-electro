@@ -77,7 +77,7 @@ export default async function AdminOrderDetailPage({
 
                                 <div>
                                     <Label htmlFor="status">Update Status</Label>
-                                    <form action={updateOrderStatus.bind(null, id, "")} className="flex gap-2 mt-2">
+                                    <form action={updateOrderStatus.bind(null, id)} className="flex gap-2 mt-2">
                                         <select
                                             id="status"
                                             name="status"
