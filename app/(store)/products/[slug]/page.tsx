@@ -6,6 +6,8 @@ import { ProductActions } from "@/components/products/product-actions";
 import { ProductTabs } from "@/components/products/product-tabs";
 import { ProductCard } from "@/components/products/product-card";
 import { ChevronRight, Home, Star, Package, Shield, TruckIcon } from "lucide-react";
+import { ProductSchema, BreadcrumbSchema } from "@/components/seo/json-ld";
+import { SITE_CONFIG } from "@/lib/seo-config";
 
 interface ProductPageProps {
     params: Promise<{
@@ -25,7 +27,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             category:categories(id, name, slug),
             brand:brands(id, name, slug),
             images:product_images(image_url, alt_text, display_order),
-            inventory!inner(quantity)
+            inventory(quantity)
         `)
         .eq("slug", slug)
         .eq("is_active", true)
@@ -53,10 +55,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const discountPercent = hasDiscount
         ? Math.round(((product.price - product.discounted_price) / product.price) * 100)
         : 0;
-    const inStock = product.inventory?.[0]?.quantity > 0;
+    // Check inventory - if no inventory record exists, check product.stock_quantity or default to in stock
+    const inventoryQuantity = product.inventory?.[0]?.quantity;
+    const inStock = inventoryQuantity !== undefined && inventoryQuantity !== null
+        ? inventoryQuantity > 0
+        : (product.stock_quantity !== undefined ? product.stock_quantity > 0 : true);
+
+    // Breadcrumb items for structured data
+    const breadcrumbItems = [
+        { name: "Home", url: SITE_CONFIG.url },
+        { name: "Products", url: `${SITE_CONFIG.url}/products` },
+        ...(product.category ? [{ name: product.category.name, url: `${SITE_CONFIG.url}/category/${product.category.slug}` }] : []),
+        { name: product.name, url: `${SITE_CONFIG.url}/products/${product.slug}` },
+    ];
 
     return (
         <div className="min-h-screen">
+            {/* Product Structured Data */}
+            <ProductSchema
+                product={{
+                    name: product.name,
+                    description: product.short_description || product.name,
+                    price: product.price,
+                    discountedPrice: product.discounted_price,
+                    image: product.images?.[0]?.image_url || '/placeholder.jpg',
+                    sku: product.sku || product.slug,
+                    slug: product.slug,
+                    brand: product.brand?.name,
+                    category: product.category?.name,
+                    inStock: inStock,
+                    rating: 4.8,
+                    reviewCount: 24,
+                }}
+            />
+            {/* Breadcrumb Structured Data */}
+            <BreadcrumbSchema items={breadcrumbItems} />
+
             {/* Breadcrumb */}
             <div className="bg-gray-50 border-b">
                 <div className="container-custom py-4">
@@ -157,7 +191,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 <div className="flex items-center gap-2 text-green-600">
                                     <Package className="h-5 w-5" />
                                     <span className="font-semibold">In Stock</span>
-                                    <span className="text-gray-600">({product.inventory[0].quantity} available)</span>
+                                    {inventoryQuantity !== undefined && inventoryQuantity !== null && (
+                                        <span className="text-gray-600">({inventoryQuantity} available)</span>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 text-red-600">
@@ -230,7 +266,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                                 </Link>
                             )}
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                             {relatedProducts.map((relatedProduct: any, index: number) => (
                                 <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} />
                             ))}
@@ -249,7 +285,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
     const { data: product } = await supabase
         .from("products")
-        .select("name, meta_title, meta_description, short_description")
+        .select("name, meta_title, meta_description, short_description, price, discounted_price, category:categories(name), brand:brands(name), images:product_images(image_url)")
         .eq("slug", slug)
         .single();
 
@@ -259,8 +295,48 @@ export async function generateMetadata({ params }: ProductPageProps) {
         };
     }
 
+    const title = product.meta_title || `${product.name} - Buy Online at Best Price | SultaniElectro`;
+    const brandData = product.brand as any;
+    const categoryData = product.category as any;
+    const brandName = Array.isArray(brandData) ? brandData[0]?.name : brandData?.name;
+    const categoryName = Array.isArray(categoryData) ? categoryData[0]?.name : categoryData?.name;
+    const description = product.meta_description ||
+        `Buy ${product.name} online at best price in Pakistan. ${brandName || ''} ${categoryName || ''}. Free delivery on orders above PKR 50,000. Shop now at SultaniElectro!`;
+
     return {
-        title: product.meta_title || `${product.name} - SultaniElectro`,
-        description: product.meta_description || product.short_description || product.name,
+        title,
+        description,
+        keywords: [
+            product.name,
+            `${product.name} price Pakistan`,
+            `buy ${product.name} online`,
+            brandName,
+            categoryName,
+            "solar panels Pakistan",
+            "SultaniElectro",
+        ].filter(Boolean),
+        alternates: {
+            canonical: `/products/${slug}`,
+        },
+        openGraph: {
+            title,
+            description,
+            type: "product",
+            url: `${SITE_CONFIG.url}/products/${slug}`,
+            images: product.images?.[0]?.image_url ? [
+                {
+                    url: product.images[0].image_url,
+                    width: 800,
+                    height: 600,
+                    alt: product.name,
+                }
+            ] : [],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+            images: product.images?.[0]?.image_url ? [product.images[0].image_url] : [],
+        },
     };
 }

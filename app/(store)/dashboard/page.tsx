@@ -99,11 +99,11 @@ export default async function DashboardPage() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold">PKR {order.total_amount.toLocaleString()}</p>
+                                        <p className="font-bold">PKR {order.total?.toLocaleString()}</p>
                                         <p className="text-sm">
                                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                        'bg-yellow-100 text-yellow-700'
+                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
                                                 }`}>
                                                 {order.status}
                                             </span>

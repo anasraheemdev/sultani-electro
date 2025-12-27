@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { ChatBot } from "@/components/chat/chat-bot";
 
 export default function StoreLayout({
     children,
@@ -11,6 +12,7 @@ export default function StoreLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <ChatBot />
         </div>
     );
 }

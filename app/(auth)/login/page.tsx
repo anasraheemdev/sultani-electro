@@ -12,11 +12,12 @@ export const metadata: Metadata = {
     description: "Login to your account",
 };
 
-export default function LoginPage({
+export default async function LoginPage({
     searchParams,
 }: {
-    searchParams: { registered?: string; error?: string };
+    searchParams: Promise<{ registered?: string; error?: string }>;
 }) {
+    const params = await searchParams;
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <Card className="w-full max-w-md">
@@ -29,7 +30,7 @@ export default function LoginPage({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {searchParams.registered && (
+                    {params.registered && (
                         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                             <p className="text-sm text-green-800">
                                 Registration successful! Please check your email to verify your account.
@@ -37,9 +38,9 @@ export default function LoginPage({
                         </div>
                     )}
 
-                    {searchParams.error && (
+                    {params.error && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-sm text-red-800">{searchParams.error}</p>
+                            <p className="text-sm text-red-800">{params.error}</p>
                         </div>
                     )}
 

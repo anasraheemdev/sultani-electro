@@ -62,8 +62,8 @@ export function Header() {
 
     return (
         <>
-            {/* Spacer for fixed header - Increased for better spacing */}
-            <div className="h-28 md:h-32" />
+            {/* Spacer for fixed header - Responsive */}
+            <div className="h-24 sm:h-28 md:h-32" />
 
             {/* Floating Header */}
             <motion.header
@@ -71,17 +71,22 @@ export function Header() {
                 className="fixed top-4 left-0 right-0 z-50 px-4"
             >
                 <div className="container-custom">
-                    <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50">
-                        <div className="px-6 py-4">
+                    <div className="bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200/50">
+                        <div className="px-3 sm:px-6 py-2 sm:py-4">
                             <div className="flex items-center justify-between gap-4">
-                                {/* Logo */}
                                 <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
                                     <motion.div
                                         whileHover={{ scale: 1.05 }}
-                                        className="text-2xl font-bold"
+                                        className="relative"
                                     >
-                                        <span className="text-primary">Sultani</span>
-                                        <span className="text-gray-900">Electro</span>
+                                        <Image
+                                            src="/logo.png"
+                                            alt="Sultani Electro - Solar Energy Solutions"
+                                            width={140}
+                                            height={45}
+                                            className="h-8 sm:h-10 md:h-11 w-auto object-contain"
+                                            priority
+                                        />
                                     </motion.div>
                                 </Link>
 
@@ -245,6 +250,20 @@ export function Header() {
                                         </Button>
                                     </motion.div>
 
+                                    {/* Mobile Search Icon */}
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="md:hidden">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="rounded-full hover:bg-primary/10"
+                                            asChild
+                                        >
+                                            <Link href="/search">
+                                                <Search className="h-5 w-5" />
+                                            </Link>
+                                        </Button>
+                                    </motion.div>
+
                                     {/* Mobile Menu Toggle */}
                                     <Button
                                         variant="ghost"
@@ -261,85 +280,68 @@ export function Header() {
                                 </div>
                             </div>
 
-                            {/* Mobile Search */}
-                            <form
-                                onSubmit={handleSearch}
-                                className="md:hidden mt-4"
-                            >
-                                <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="search"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Search products..."
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-primary focus:outline-none transition-all"
-                                    />
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* Mobile Menu */}
-                        {isMobileMenuOpen && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="md:hidden border-t border-gray-200 rounded-b-3xl overflow-hidden"
-                            >
-                                <nav className="px-6 py-4 space-y-2">
-                                    <Link
-                                        href="/products"
-                                        className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Products
-                                    </Link>
-                                    <Link
-                                        href="/categories"
-                                        className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Categories
-                                    </Link>
-                                    <Link
-                                        href="/wishlist"
-                                        className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Wishlist
-                                    </Link>
-                                    {user ? (
-                                        <>
-                                            <Link
-                                                href="/dashboard"
-                                                className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                            >
-                                                Dashboard
-                                            </Link>
-                                            <button
-                                                onClick={() => {
-                                                    handleSignOut();
-                                                    setIsMobileMenuOpen(false);
-                                                }}
-                                                className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                                            >
-                                                Sign Out
-                                            </button>
-                                        </>
-                                    ) : (
+                            {/* Mobile Menu */}
+                            {isMobileMenuOpen && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="md:hidden border-t border-gray-200 rounded-b-3xl overflow-hidden"
+                                >
+                                    <nav className="px-6 py-4 space-y-2">
                                         <Link
-                                            href="/login"
+                                            href="/products"
                                             className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Login
+                                            Products
                                         </Link>
-                                    )}
-                                </nav>
-                            </motion.div>
-                        )}
+                                        <Link
+                                            href="/categories"
+                                            className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Categories
+                                        </Link>
+                                        <Link
+                                            href="/wishlist"
+                                            className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Wishlist
+                                        </Link>
+                                        {user ? (
+                                            <>
+                                                <Link
+                                                    href="/dashboard"
+                                                    className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                >
+                                                    Dashboard
+                                                </Link>
+                                                <button
+                                                    onClick={() => {
+                                                        handleSignOut();
+                                                        setIsMobileMenuOpen(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                >
+                                                    Sign Out
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <Link
+                                                href="/login"
+                                                className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Login
+                                            </Link>
+                                        )}
+                                    </nav>
+                                </motion.div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </motion.header>

@@ -76,9 +76,16 @@ export default function CheckoutPage() {
         const supabase = createClient();
 
         try {
+            // Generate order number
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const orderNumber = `SE-${dateStr}-${randomStr}`;
+
             // Create order
             const orderData = {
                 user_id: user.id,
+                order_number: orderNumber,
                 customer_name: formData.get("customerName") as string,
                 customer_email: formData.get("customerEmail") as string,
                 customer_phone: formData.get("customerPhone") as string,

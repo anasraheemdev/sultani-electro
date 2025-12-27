@@ -12,10 +12,11 @@ export default async function OrderDetailPage({
     params,
     searchParams,
 }: {
-    params: { id: string };
-    searchParams: { success?: string };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ success?: string }>;
 }) {
     const { id } = await params;
+    const queryParams = await searchParams;
     const supabase = await createClient();
 
     const {
@@ -58,7 +59,7 @@ export default async function OrderDetailPage({
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {searchParams.success && (
+            {queryParams.success && (
                 <Card className="mb-6 border-green-200 bg-green-50">
                     <CardContent className="p-6">
                         <div className="flex items-center gap-3">

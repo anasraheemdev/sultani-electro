@@ -344,7 +344,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply updated_at triggers
+-- Apply updated_at triggers (drop first to allow re-running)
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+DROP TRIGGER IF EXISTS update_categories_updated_at ON categories;
+DROP TRIGGER IF EXISTS update_products_updated_at ON products;
+DROP TRIGGER IF EXISTS update_brands_updated_at ON brands;
+DROP TRIGGER IF EXISTS update_addresses_updated_at ON addresses;
+DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
+DROP TRIGGER IF EXISTS update_carts_updated_at ON carts;
+DROP TRIGGER IF EXISTS update_cart_items_updated_at ON cart_items;
+DROP TRIGGER IF EXISTS update_banners_updated_at ON banners;
+DROP TRIGGER IF EXISTS update_coupons_updated_at ON coupons;
+DROP TRIGGER IF EXISTS update_reviews_updated_at ON reviews;
+DROP TRIGGER IF EXISTS update_inventory_updated_at ON inventory;
+
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -365,6 +378,31 @@ BEGIN
   RETURN 'SE-' || TO_CHAR(NOW(), 'YYYYMMDD') || '-' || LPAD(NEXTVAL('order_number_seq')::TEXT, 6, '0');
 END;
 $$ LANGUAGE plpgsql;
+
+-- Function to auto-create user in users table when auth.users gets a new entry
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, full_name, phone)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
+    NEW.raw_user_meta_data->>'phone'
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    full_name = COALESCE(EXCLUDED.full_name, users.full_name),
+    updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call handle_new_user when a user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Create sequence for order numbers
 CREATE SEQUENCE IF NOT EXISTS order_number_seq;
@@ -395,29 +433,40 @@ ALTER TABLE product_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE search_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Users policies
+-- Users policies (drop first to allow re-running)
+DROP POLICY IF EXISTS "Users can view their own profile" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+DROP POLICY IF EXISTS "Users can create their own profile" ON users;
 CREATE POLICY "Users can view their own profile" ON users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update their own profile" ON users FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can create their own profile" ON users FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Categories policies (public read)
+DROP POLICY IF EXISTS "Anyone can view active categories" ON categories;
 CREATE POLICY "Anyone can view active categories" ON categories FOR SELECT USING (is_active = TRUE);
 
 -- Products policies (public read for active products)
+DROP POLICY IF EXISTS "Anyone can view active products" ON products;
 CREATE POLICY "Anyone can view active products" ON products FOR SELECT USING (is_active = TRUE);
 
 -- Product images policies (public read)
+DROP POLICY IF EXISTS "Anyone can view product images" ON product_images;
 CREATE POLICY "Anyone can view product images" ON product_images FOR SELECT USING (TRUE);
 
 -- Product videos policies (public read)
+DROP POLICY IF EXISTS "Anyone can view product videos" ON product_videos;
 CREATE POLICY "Anyone can view product videos" ON product_videos FOR SELECT USING (TRUE);
 
 -- Inventory policies (public read)
+DROP POLICY IF EXISTS "Anyone can view inventory" ON inventory;
 CREATE POLICY "Anyone can view inventory" ON inventory FOR SELECT USING (TRUE);
 
 -- Brands policies (public read)
+DROP POLICY IF EXISTS "Anyone can view active brands" ON brands;
 CREATE POLICY "Anyone can view active brands" ON brands FOR SELECT USING (is_active = TRUE);
 
 -- Banners policies (public read for active banners)
+DROP POLICY IF EXISTS "Anyone can view active banners" ON banners;
 CREATE POLICY "Anyone can view active banners" ON banners FOR SELECT USING (
   is_active = TRUE AND
   (start_date IS NULL OR start_date <= NOW()) AND
@@ -425,34 +474,54 @@ CREATE POLICY "Anyone can view active banners" ON banners FOR SELECT USING (
 );
 
 -- Testimonials policies (public read)
+DROP POLICY IF EXISTS "Anyone can view active testimonials" ON testimonials;
 CREATE POLICY "Anyone can view active testimonials" ON testimonials FOR SELECT USING (is_active = TRUE);
 
 -- Reviews policies
+DROP POLICY IF EXISTS "Anyone can view approved reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can create reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can update their own reviews" ON reviews;
 CREATE POLICY "Anyone can view approved reviews" ON reviews FOR SELECT USING (is_approved = TRUE);
 CREATE POLICY "Users can create reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
 
 -- Addresses policies
+DROP POLICY IF EXISTS "Users can view their own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can create their own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can update their own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can delete their own addresses" ON addresses;
 CREATE POLICY "Users can view their own addresses" ON addresses FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create their own addresses" ON addresses FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own addresses" ON addresses FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete their own addresses" ON addresses FOR DELETE USING (auth.uid() = user_id);
 
 -- Orders policies
+DROP POLICY IF EXISTS "Users can view their own orders" ON orders;
+DROP POLICY IF EXISTS "Users can create orders" ON orders;
 CREATE POLICY "Users can view their own orders" ON orders FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create orders" ON orders FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Order items policies
+DROP POLICY IF EXISTS "Users can view their order items" ON order_items;
+DROP POLICY IF EXISTS "Users can create their order items" ON order_items;
 CREATE POLICY "Users can view their order items" ON order_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM orders WHERE orders.id = order_items.order_id AND orders.user_id = auth.uid())
 );
+CREATE POLICY "Users can create their order items" ON order_items FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM orders WHERE orders.id = order_id AND orders.user_id = auth.uid())
+);
 
 -- Carts policies
+DROP POLICY IF EXISTS "Users can view their own cart" ON carts;
+DROP POLICY IF EXISTS "Users can create their own cart" ON carts;
+DROP POLICY IF EXISTS "Users can update their own cart" ON carts;
 CREATE POLICY "Users can view their own cart" ON carts FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can create their own cart" ON carts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own cart" ON carts FOR UPDATE USING (auth.uid() = user_id);
 
 -- Cart items policies
+DROP POLICY IF EXISTS "Users can view their cart items" ON cart_items;
+DROP POLICY IF EXISTS "Users can manage their cart items" ON cart_items;
 CREATE POLICY "Users can view their cart items" ON cart_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM carts WHERE carts.id = cart_items.cart_id AND carts.user_id = auth.uid())
 );
@@ -461,7 +530,88 @@ CREATE POLICY "Users can manage their cart items" ON cart_items FOR ALL USING (
 );
 
 -- Product views policies (anyone can create)
+DROP POLICY IF EXISTS "Anyone can create product views" ON product_views;
 CREATE POLICY "Anyone can create product views" ON product_views FOR INSERT WITH CHECK (TRUE);
 
 -- Search logs policies (anyone can create)
+DROP POLICY IF EXISTS "Anyone can create search logs" ON search_logs;
 CREATE POLICY "Anyone can create search logs" ON search_logs FOR INSERT WITH CHECK (TRUE);
+
+-- ============================================================================
+-- ADMIN RLS POLICIES
+-- ============================================================================
+-- Admins can access all data. These policies check if user is in admins table.
+
+-- Helper function to check if user is admin
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM admins WHERE user_id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Admin policies for orders (full access)
+DROP POLICY IF EXISTS "Admins can view all orders" ON orders;
+DROP POLICY IF EXISTS "Admins can update all orders" ON orders;
+CREATE POLICY "Admins can view all orders" ON orders FOR SELECT USING (is_admin());
+CREATE POLICY "Admins can update all orders" ON orders FOR UPDATE USING (is_admin());
+
+-- Admin policies for order_items (read access)
+DROP POLICY IF EXISTS "Admins can view all order items" ON order_items;
+CREATE POLICY "Admins can view all order items" ON order_items FOR SELECT USING (is_admin());
+
+-- Admin policies for products (full access)
+DROP POLICY IF EXISTS "Admins can view all products" ON products;
+DROP POLICY IF EXISTS "Admins can insert products" ON products;
+DROP POLICY IF EXISTS "Admins can update products" ON products;
+DROP POLICY IF EXISTS "Admins can delete products" ON products;
+CREATE POLICY "Admins can view all products" ON products FOR SELECT USING (is_admin());
+CREATE POLICY "Admins can insert products" ON products FOR INSERT WITH CHECK (is_admin());
+CREATE POLICY "Admins can update products" ON products FOR UPDATE USING (is_admin());
+CREATE POLICY "Admins can delete products" ON products FOR DELETE USING (is_admin());
+
+-- Admin policies for users (read/update access)
+DROP POLICY IF EXISTS "Admins can view all users" ON users;
+DROP POLICY IF EXISTS "Admins can update all users" ON users;
+CREATE POLICY "Admins can view all users" ON users FOR SELECT USING (is_admin());
+CREATE POLICY "Admins can update all users" ON users FOR UPDATE USING (is_admin());
+
+-- Admin policies for inventory (full access)
+DROP POLICY IF EXISTS "Admins can update inventory" ON inventory;
+DROP POLICY IF EXISTS "Admins can insert inventory" ON inventory;
+CREATE POLICY "Admins can update inventory" ON inventory FOR UPDATE USING (is_admin());
+CREATE POLICY "Admins can insert inventory" ON inventory FOR INSERT WITH CHECK (is_admin());
+
+-- Admin policies for addresses (read access for customer info)
+DROP POLICY IF EXISTS "Admins can view all addresses" ON addresses;
+CREATE POLICY "Admins can view all addresses" ON addresses FOR SELECT USING (is_admin());
+
+-- Admin policies for categories (full access)
+DROP POLICY IF EXISTS "Admins can manage categories" ON categories;
+CREATE POLICY "Admins can manage categories" ON categories FOR ALL USING (is_admin());
+
+-- Admin policies for brands (full access)
+DROP POLICY IF EXISTS "Admins can manage brands" ON brands;
+CREATE POLICY "Admins can manage brands" ON brands FOR ALL USING (is_admin());
+
+-- Admin policies for banners (full access)
+DROP POLICY IF EXISTS "Admins can manage banners" ON banners;
+CREATE POLICY "Admins can manage banners" ON banners FOR ALL USING (is_admin());
+
+-- Admin policies for coupons (full access)
+DROP POLICY IF EXISTS "Admins can manage coupons" ON coupons;
+CREATE POLICY "Admins can manage coupons" ON coupons FOR ALL USING (is_admin());
+
+-- Admin policies for reviews (full access for moderation)
+DROP POLICY IF EXISTS "Admins can manage reviews" ON reviews;
+CREATE POLICY "Admins can manage reviews" ON reviews FOR ALL USING (is_admin());
+
+-- Admin policies for testimonials (full access)
+DROP POLICY IF EXISTS "Admins can manage testimonials" ON testimonials;
+CREATE POLICY "Admins can manage testimonials" ON testimonials FOR ALL USING (is_admin());
+
+-- Admin policies for admins table
+DROP POLICY IF EXISTS "Admins can view admins" ON admins;
+CREATE POLICY "Admins can view admins" ON admins FOR SELECT USING (is_admin() OR auth.uid() = user_id);

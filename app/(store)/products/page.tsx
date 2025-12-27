@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/products/product-card";
 import { ProductFilters } from "@/components/products/product-filters";
 import { ProductSort } from "@/components/products/product-sort";
-import { ChevronRight, Home } from "lucide-react";
+import { PageHero } from "@/components/ui/page-hero";
 import Link from "next/link";
 
 interface ProductsPageProps {
@@ -79,83 +79,60 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     const { data: products } = await query;
 
     return (
-        <div className="min-h-screen">
-            {/* Breadcrumb */}
-            <div className="bg-gray-50 border-b">
-                <div className="container-custom py-4">
-                    <nav className="flex items-center gap-2 text-sm">
-                        <Link href="/" className="text-gray-600 hover:text-primary transition-colors flex items-center gap-1">
-                            <Home className="h-4 w-4" />
-                            Home
-                        </Link>
-                        <ChevronRight className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-900 font-medium">Products</span>
-                    </nav>
-                </div>
-            </div>
-
-            {/* Header */}
-            <div className="bg-gradient-to-br from-primary/5 via-white to-secondary/5 py-12">
-                <div className="container-custom">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        All <span className="text-primary">Products</span>
-                    </h1>
-                    <p className="text-gray-600 text-lg max-w-2xl">
-                        Browse our complete collection of premium solar energy solutions and electronics
-                    </p>
-                </div>
-            </div>
+        <div className="min-h-screen bg-gray-50">
+            {/* Hero Banner */}
+            <PageHero
+                title="All Products"
+                highlightedWord="Products"
+                description="Browse our complete collection of premium solar energy solutions and electronics"
+                iconName="package"
+                breadcrumbs={[{ label: "Products" }]}
+                variant="gradient"
+            />
 
             {/* Main Content */}
-            <div className="container-custom py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Filters Sidebar */}
-                    <aside className="lg:col-span-1">
+            <div className="container-custom py-6 sm:py-12">
+                {/* Results Header with Filter Button */}
+                <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3">
+                    <div className="flex items-center gap-3">
                         <ProductFilters
                             categories={categories || []}
                             brands={brands || []}
                             currentFilters={params}
                         />
-                    </aside>
+                        <p className="text-gray-600 text-sm sm:text-base">
+                            <span className="font-semibold text-gray-900">{products?.length || 0}</span> products
+                        </p>
+                    </div>
 
-                    {/* Products Grid */}
-                    <main className="lg:col-span-3">
-                        {/* Results Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <p className="text-gray-600">
-                                <span className="font-semibold text-gray-900">{products?.length || 0}</span> products found
-                            </p>
-
-                            {/* Sort Dropdown */}
-                            <ProductSort />
-                        </div>
-
-                        {/* Products Grid */}
-                        {products && products.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {products.map((product: any, index: number) => (
-                                    <ProductCard key={product.id} product={product} index={index} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-gray-50 rounded-2xl">
-                                <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <span className="text-4xl">📦</span>
-                                </div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Products Found</h2>
-                                <p className="text-gray-600 mb-6">
-                                    Try adjusting your filters or browse all products
-                                </p>
-                                <Link
-                                    href="/products"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors"
-                                >
-                                    Clear Filters
-                                </Link>
-                            </div>
-                        )}
-                    </main>
+                    {/* Sort Dropdown */}
+                    <ProductSort />
                 </div>
+
+                {/* Products Grid */}
+                {products && products.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+                        {products.map((product: any, index: number) => (
+                            <ProductCard key={product.id} product={product} index={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 bg-gray-50 rounded-2xl">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-4xl">📦</span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">No Products Found</h2>
+                        <p className="text-gray-600 mb-6">
+                            Try adjusting your filters or browse all products
+                        </p>
+                        <Link
+                            href="/products"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors"
+                        >
+                            Clear Filters
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

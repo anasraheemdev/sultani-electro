@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -16,14 +17,18 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL("/login?redirect=/admin", request.url));
         }
 
-        // Check if user is admin
-        const { data: admin } = await supabase
+        // Use admin client (service role) to bypass RLS for admin check
+        const adminSupabase = createAdminClient();
+        const { data: admin, error } = await adminSupabase
             .from("admins")
             .select("*")
             .eq("user_id", user.id)
             .single();
 
+        console.log("Admin check:", { userId: user.id, admin, error });
+
         if (!admin) {
+            console.log("User is not an admin, redirecting to home");
             return NextResponse.redirect(new URL("/", request.url));
         }
     }

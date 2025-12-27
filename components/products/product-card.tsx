@@ -101,12 +101,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                             <motion.div
                                 animate={{ scale: isHovered ? 1.08 : 1 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="w-full h-full"
+                                className="relative w-full h-full"
                             >
                                 <Image
                                     src={product.images[0].image_url}
                                     alt={product.images[0].alt_text || product.name}
                                     fill
+                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                     className="object-cover"
                                 />
                             </motion.div>
@@ -198,14 +199,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                         <span className="text-xs text-gray-500 ml-0.5">(4.8)</span>
                     </div>
 
-                    {/* Price - Smaller */}
+                    {/* Price - Responsive */}
                     <div className="flex items-center justify-between">
-                        <div className="flex items-baseline gap-1.5">
-                            <span className="text-base md:text-lg font-bold text-gray-900">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-1.5">
+                            <span className="text-xs sm:text-sm md:text-base font-bold text-gray-900">
                                 PKR {finalPrice.toLocaleString()}
                             </span>
                             {hasDiscount && (
-                                <span className="text-xs text-gray-400 line-through">
+                                <span className="text-[10px] sm:text-xs text-gray-400 line-through">
                                     PKR {product.price.toLocaleString()}
                                 </span>
                             )}

@@ -12,11 +12,12 @@ export const metadata: Metadata = {
     description: "Create a new account",
 };
 
-export default function RegisterPage({
+export default async function RegisterPage({
     searchParams,
 }: {
-    searchParams: { error?: string };
+    searchParams: Promise<{ error?: string }>;
 }) {
+    const params = await searchParams;
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <Card className="w-full max-w-md">
@@ -29,9 +30,9 @@ export default function RegisterPage({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {searchParams.error && (
+                    {params.error && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-sm text-red-800">{searchParams.error}</p>
+                            <p className="text-sm text-red-800">{params.error}</p>
                         </div>
                     )}
                     <form action={register} className="space-y-4">

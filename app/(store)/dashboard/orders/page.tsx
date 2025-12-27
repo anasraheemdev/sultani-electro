@@ -19,9 +19,12 @@ export default async function OrdersPage() {
             *,
             order_items(
                 quantity,
-                price,
+                unit_price,
+                total_price,
+                product_name,
                 product:products(name, slug, images:product_images(image_url))
-            )
+            ),
+            delivery_address:addresses(*)
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -78,7 +81,7 @@ export default async function OrdersPage() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-600">Total</p>
-                                        <p className="font-semibold">PKR {order.total_amount.toLocaleString()}</p>
+                                        <p className="font-semibold">PKR {order.total?.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -107,7 +110,7 @@ export default async function OrdersPage() {
                                                 <p className="font-semibold">{item.product?.name}</p>
                                                 <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                                             </div>
-                                            <p className="font-semibold">PKR {item.price.toLocaleString()}</p>
+                                            <p className="font-semibold">PKR {item.total_price?.toLocaleString()}</p>
                                         </div>
                                     ))}
                                     {order.order_items?.length > 3 && (
@@ -119,7 +122,7 @@ export default async function OrdersPage() {
 
                                 <div className="mt-6 pt-6 border-t flex items-center justify-between">
                                     <div className="text-sm text-gray-600">
-                                        <p>Shipping Address: {order.shipping_address?.address || "N/A"}</p>
+                                        <p>Delivery Address: {order.delivery_address?.address_line1 || "N/A"}</p>
                                     </div>
                                     <Link
                                         href={`/dashboard/orders/${order.id}`}

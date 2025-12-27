@@ -38,59 +38,50 @@ export default function NewProductPage() {
         const formData = new FormData(e.currentTarget);
 
         try {
-            // Insert product
-            const { data: product, error: productError } = await supabase
-                .from('products')
-                .insert({
-                    name: formData.get('name'),
-                    slug: (formData.get('name') as string).toLowerCase().replace(/\s+/g, '-'),
-                    description: formData.get('description'),
-                    short_description: formData.get('short_description'),
-                    sku: formData.get('sku'),
-                    category_id: formData.get('category_id'),
-                    brand_id: formData.get('brand_id') || null,
-                    price: parseFloat(formData.get('price') as string),
-                    discounted_price: formData.get('discounted_price')
-                        ? parseFloat(formData.get('discounted_price') as string)
-                        : null,
-                    specifications: formData.get('specifications')
-                        ? JSON.parse(formData.get('specifications') as string)
-                        : null,
-                    features: features.filter(f => f.trim()),
-                    is_featured: formData.get('is_featured') === 'on',
-                    is_active: formData.get('is_active') === 'on',
-                })
-                .select()
-                .single();
+            // Prepare product data
+            const productData = {
+                name: formData.get('name'),
+                slug: (formData.get('name') as string).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                description: formData.get('description'),
+                short_description: formData.get('short_description'),
+                sku: formData.get('sku'),
+                category_id: formData.get('category_id'),
+                brand_id: formData.get('brand_id') || null,
+                price: parseFloat(formData.get('price') as string),
+                discounted_price: formData.get('discounted_price')
+                    ? parseFloat(formData.get('discounted_price') as string)
+                    : null,
+                specifications: formData.get('specifications')
+                    ? JSON.parse(formData.get('specifications') as string)
+                    : null,
+                features: features.filter(f => f.trim()),
+                is_featured: formData.get('is_featured') === 'on',
+                is_active: formData.get('is_active') === 'on',
+            };
 
-            if (productError) throw productError;
+            const inventoryData = {
+                quantity: parseInt(formData.get('quantity') as string) || 0,
+                low_stock_threshold: parseInt(formData.get('low_stock_threshold') as string) || 10,
+            };
 
-            // Insert images
-            if (imageUrls.length > 0) {
-                const { error: imagesError } = await supabase
-                    .from('product_images')
-                    .insert(
-                        imageUrls.map((url, index) => ({
-                            product_id: product.id,
-                            image_url: url,
-                            alt_text: `${product.name} - Image ${index + 1}`,
-                            display_order: index,
-                        }))
-                    );
+            // Call admin API route (bypasses RLS)
+            const response = await fetch('/api/admin/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productData,
+                    imageUrls,
+                    inventoryData,
+                }),
+            });
 
-                if (imagesError) throw imagesError;
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to create product');
             }
-
-            // Insert inventory
-            const { error: inventoryError } = await supabase
-                .from('inventory')
-                .insert({
-                    product_id: product.id,
-                    quantity: parseInt(formData.get('quantity') as string) || 0,
-                    low_stock_threshold: parseInt(formData.get('low_stock_threshold') as string) || 10,
-                });
-
-            if (inventoryError) throw inventoryError;
 
             toast.success('Product created successfully!');
             router.push('/admin/products');

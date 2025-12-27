@@ -1,0 +1,61 @@
+{
+    "name": "SultaniElectro - Solar Energy Solutions Pakistan",
+    "short_name": "SultaniElectro",
+    "description": "Pakistan's #1 trusted solar energy provider. Premium solar panels, inverters & batteries at best prices.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#22c55e",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "en",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "categories": [
+        "shopping",
+        "business",
+        "utilities"
+    ],
+    "shortcuts": [
+        {
+            "name": "Products",
+            "short_name": "Products",
+            "url": "/products",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "short_name": "Categories",
+            "url": "/categories",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
+}

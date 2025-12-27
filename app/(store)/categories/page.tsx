@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Package } from "lucide-react";
+import { ArrowRight, Package, Grid, Zap, Layers } from "lucide-react";
+import { PageHero } from "@/components/ui/page-hero";
+import { BreadcrumbSchema } from "@/components/seo/json-ld";
+import { SITE_CONFIG } from "@/lib/seo-config";
 
 export default async function CategoriesPage() {
     const supabase = await createClient();
@@ -17,86 +20,120 @@ export default async function CategoriesPage() {
         .order("display_order", { ascending: true });
 
     return (
-        <div className="container-custom py-12">
-            {/* Header */}
-            <div className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                    Shop by <span className="text-primary">Category</span>
-                </h1>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                    Browse our wide range of solar energy solutions and electronics.
-                    Find the perfect products for your needs.
-                </p>
-            </div>
+        <div className="min-h-screen bg-white">
+            <BreadcrumbSchema
+                items={[
+                    { name: "Home", url: SITE_CONFIG.url },
+                    { name: "Categories", url: `${SITE_CONFIG.url}/categories` }
+                ]}
+            />
+
+            {/* Hero Banner */}
+            <PageHero
+                title="Shop by Category"
+                highlightedWord="Category"
+                description="Discover our extensive range of high-performance solar solutions, premium batteries, and advanced electronics tailored for your energy needs."
+                iconName="grid"
+                variant="gradient"
+                breadcrumbs={[{ label: "Categories" }]}
+            />
 
             {/* Categories Grid */}
-            {categories && categories.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {categories.map((category: any, index: number) => (
-                        <Link
-                            key={category.id}
-                            href={`/categories/${category.slug}`}
-                            className="group"
-                        >
-                            <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
-                                {/* Category Image/Icon */}
-                                <div className="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/10 overflow-hidden">
-                                    {category.image_url ? (
-                                        <Image
-                                            src={category.image_url}
-                                            alt={category.name}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-8xl opacity-20">
-                                                {category.icon || "📦"}
-                                            </span>
+            <div className="container-custom py-12 sm:py-20">
+                <div className="flex items-center gap-3 mb-10">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <Layers className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">All Collections</h2>
+                        <p className="text-sm text-gray-500">Explore {categories?.length || 0} specialized categories</p>
+                    </div>
+                </div>
+
+                {categories && categories.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+                        {categories.map((category: any, index: number) => (
+                            <Link
+                                key={category.id}
+                                href={`/categories/${category.slug}`}
+                                className="group block h-full"
+                            >
+                                <div className="relative p-1 rounded-[2.5rem] bg-gradient-to-br from-gray-100 to-transparent hover:from-primary/20 hover:to-secondary/20 transition-all duration-500 h-full">
+                                    <div className="bg-white rounded-[2.2rem] overflow-hidden shadow-sm group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col border border-gray-100">
+                                        {/* Category Image Area */}
+                                        <div className="relative h-72 bg-gray-50 overflow-hidden">
+                                            {category.image_url ? (
+                                                <Image
+                                                    src={category.image_url}
+                                                    alt={category.name}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-primary/5">
+                                                    <span className="text-9xl opacity-10 grayscale group-hover:grayscale-0 group-hover:opacity-20 transition-all duration-500">
+                                                        {category.icon || "📦"}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {/* Gradient Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+                                            {/* Product Count Badge */}
+                                            <div className="absolute top-6 right-6 px-4 py-2 bg-white/20 backdrop-blur-md rounded-2xl border border-white/20 text-white flex items-center gap-2 transform group-hover:translate-x-[-4px] transition-transform">
+                                                <Package className="h-4 w-4" />
+                                                <span className="text-xs font-bold uppercase tracking-widest">
+                                                    {category.products?.[0]?.count || 0} Items
+                                                </span>
+                                            </div>
+
+                                            {/* Floating Icon Overlay on Hover */}
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500">
+                                                <div className="w-16 h-16 bg-white/90 backdrop-blur-xl rounded-full flex items-center justify-center transform scale-50 group-hover:scale-100 transition-all duration-500 shadow-2xl">
+                                                    <ArrowRight className="h-8 w-8 text-primary" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
 
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        {/* Category Content Area */}
+                                        <div className="p-8 flex-1 flex flex-col">
+                                            <div className="mb-4">
+                                                <div className="inline-flex items-center gap-2 text-primary-dark font-bold text-xs uppercase tracking-[0.2em] mb-3">
+                                                    <Zap className="h-3.5 w-3.5" />
+                                                    Premium Selection
+                                                </div>
+                                                <h3 className="text-2xl font-black text-gray-900 mb-3 group-hover:text-primary transition-colors leading-tight">
+                                                    {category.name}
+                                                </h3>
+                                                <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                                                    {category.description || `Discover high-quality ${category.name.toLowerCase()} products designed for reliability.`}
+                                                </p>
+                                            </div>
 
-                                    {/* Product Count Badge */}
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
-                                        <Package className="h-4 w-4 text-primary" />
-                                        <span className="text-sm font-semibold">
-                                            {category.products?.[0]?.count || 0} Products
-                                        </span>
+                                            <div className="mt-auto pt-6 flex items-center justify-between border-t border-gray-50">
+                                                <span className="text-sm font-bold text-gray-900 group-hover:translate-x-1 transition-transform">Browse Collection</span>
+                                                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                                    <ArrowRight className="h-5 w-5" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                {/* Category Info */}
-                                <div className="p-6">
-                                    <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                                        {category.name}
-                                    </h3>
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                        {category.description || "Explore our collection"}
-                                    </p>
-
-                                    {/* View Button */}
-                                    <div className="flex items-center text-primary font-semibold group-hover:gap-3 transition-all">
-                                        <span>Browse Products</span>
-                                        <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
-                                    </div>
-                                </div>
-
-                                {/* Bottom Accent */}
-                                <div className="h-1 bg-gradient-to-r from-primary via-secondary to-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
-                            </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-32 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
+                        <Package className="h-24 w-24 mx-auto text-gray-300 mb-6 animate-pulse" />
+                        <h2 className="text-3xl font-black text-gray-900 mb-3">No Collections Found</h2>
+                        <p className="text-gray-500 max-w-sm mx-auto">We're currently updating our inventory. Please check back shortly for new arrivals.</p>
+                        <Link href="/" className="inline-flex items-center gap-2 mt-10 px-8 py-3 bg-gray-900 text-white rounded-2xl font-bold hover:bg-primary transition-all shadow-xl">
+                            Return to Homepage
                         </Link>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-20">
-                    <Package className="h-20 w-20 mx-auto text-gray-300 mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">No Categories Found</h2>
-                    <p className="text-gray-600">Categories will appear here once added.</p>
-                </div>
-            )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

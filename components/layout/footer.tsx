@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, Heart, Zap } from "lucide-react";
+import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Heart, Clock } from "lucide-react";
+
+// TikTok Icon Component
+const TikTokIcon = () => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+    </svg>
+);
 
 export function Footer() {
     return (
@@ -29,37 +37,59 @@ export function Footer() {
                     {/* Brand Column */}
                     <div>
                         <Link href="/" className="inline-block mb-4">
-                            <h3 className="text-2xl font-bold">
-                                <span className="text-primary">Sultani</span>
-                                <span className="text-gray-900">Electro</span>
-                            </h3>
+                            <Image
+                                src="/logo.png"
+                                alt="Electro Sultani - Pakistan's Leading Solar Provider"
+                                width={150}
+                                height={50}
+                                className="h-10 w-auto object-contain"
+                            />
                         </Link>
-                        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                            Premium solar energy solutions and electronics for a sustainable future.
+                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                            Electro Sultani is one of the leading Solar Solution Providers in Pakistan. Established since 1969, we provide premium energy solutions across the country.
                         </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                            <Clock className="h-4 w-4" />
+                            <span>Established Since 1969</span>
+                        </div>
 
                         {/* Social Links */}
                         <div className="flex gap-3">
                             <motion.a
                                 whileHover={{ scale: 1.1, y: -2 }}
-                                href="#"
+                                href="https://facebook.com/sultanisolar"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all"
                             >
                                 <Facebook className="h-5 w-5" />
                             </motion.a>
                             <motion.a
                                 whileHover={{ scale: 1.1, y: -2 }}
-                                href="#"
+                                href="https://instagram.com/sultani.pk"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all"
                             >
                                 <Instagram className="h-5 w-5" />
                             </motion.a>
                             <motion.a
                                 whileHover={{ scale: 1.1, y: -2 }}
-                                href="#"
+                                href="https://www.youtube.com/@sultanisolar"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all"
                             >
-                                <Twitter className="h-5 w-5" />
+                                <Youtube className="h-5 w-5" />
+                            </motion.a>
+                            <motion.a
+                                whileHover={{ scale: 1.1, y: -2 }}
+                                href="https://tiktok.com/@sultani.pk"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all"
+                            >
+                                <TikTokIcon />
                             </motion.a>
                         </div>
                     </div>
@@ -114,18 +144,18 @@ export function Footer() {
                         <ul className="space-y-3">
                             <li className="flex items-start gap-3 text-sm text-gray-600">
                                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                                <span>Lahore, Pakistan</span>
+                                <span>Dara Araian, Mujahid Rd, Rehmat Pura Dara Arain, Sialkot, 51310</span>
                             </li>
                             <li className="flex items-center gap-3 text-sm">
                                 <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                                <a href="tel:+923001234567" className="text-gray-600 hover:text-primary transition-colors">
-                                    +92 300 1234567
+                                <a href="tel:03227858264" className="text-gray-600 hover:text-primary transition-colors">
+                                    0322 7858264
                                 </a>
                             </li>
                             <li className="flex items-center gap-3 text-sm">
                                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                                <a href="mailto:info@sultanielectro.com" className="text-gray-600 hover:text-primary transition-colors">
-                                    info@sultanielectro.com
+                                <a href="mailto:info@sultani.pk" className="text-gray-600 hover:text-primary transition-colors">
+                                    info@sultani.pk
                                 </a>
                             </li>
                         </ul>
@@ -138,7 +168,7 @@ export function Footer() {
                 {/* Bottom Section */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
                     <p className="text-gray-600">
-                        © {new Date().getFullYear()} SultaniElectro. All rights reserved.
+                        © {new Date().getFullYear()} Electro Sultani. All rights reserved.
                     </p>
 
                     {/* ObrixLabs Credit */}
@@ -149,9 +179,7 @@ export function Footer() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors"
                     >
-                        <span>Crafted with</span>
-                        <Heart className="h-4 w-4 text-red-500 fill-current animate-pulse" />
-                        <span>by</span>
+                        <span className="text-gray-400">Developed by</span>
                         <span className="font-semibold text-primary">ObrixLabs</span>
                     </motion.a>
 

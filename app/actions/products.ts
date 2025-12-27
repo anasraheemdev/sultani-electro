@@ -1,11 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function createProduct(formData: FormData) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const productData = {
         name: formData.get("name") as string,
@@ -32,6 +32,7 @@ export async function createProduct(formData: FormData) {
         .single();
 
     if (error) {
+        console.error("Create product error:", error);
         return { error: error.message };
     }
 
@@ -47,7 +48,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(productId: string, formData: FormData): Promise<void> {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const productData = {
         name: formData.get("name") as string,
@@ -64,6 +65,8 @@ export async function updateProduct(productId: string, formData: FormData): Prom
         is_active: formData.get("is_active") === "on",
     };
 
+    console.log("Updating product:", productId, productData);
+
     const { error } = await supabase
         .from("products")
         .update(productData)
@@ -74,14 +77,50 @@ export async function updateProduct(productId: string, formData: FormData): Prom
         return;
     }
 
-    // Update inventory
-    await supabase
+    // Get quantity values
+    const quantity = parseInt(formData.get("quantity") as string) || 0;
+    const lowStockThreshold = parseInt(formData.get("low_stock_threshold") as string) || 10;
+
+    console.log("Updating inventory - quantity:", quantity, "threshold:", lowStockThreshold);
+
+    // Check if inventory exists for this product
+    const { data: existingInventory } = await supabase
         .from("inventory")
-        .update({
-            quantity: parseInt(formData.get("quantity") as string) || 0,
-            low_stock_threshold: parseInt(formData.get("low_stock_threshold") as string) || 10,
-        })
-        .eq("product_id", productId);
+        .select("id")
+        .eq("product_id", productId)
+        .single();
+
+    if (existingInventory) {
+        // Update existing inventory
+        const { error: invError } = await supabase
+            .from("inventory")
+            .update({
+                quantity: quantity,
+                low_stock_threshold: lowStockThreshold,
+            })
+            .eq("product_id", productId);
+
+        if (invError) {
+            console.error("Failed to update inventory:", invError.message);
+        } else {
+            console.log("Inventory updated successfully");
+        }
+    } else {
+        // Insert new inventory record
+        const { error: invError } = await supabase
+            .from("inventory")
+            .insert({
+                product_id: productId,
+                quantity: quantity,
+                low_stock_threshold: lowStockThreshold,
+            });
+
+        if (invError) {
+            console.error("Failed to insert inventory:", invError.message);
+        } else {
+            console.log("Inventory created successfully");
+        }
+    }
 
     // Get product slug for revalidation
     const { data: product } = await supabase
@@ -94,10 +133,18 @@ export async function updateProduct(productId: string, formData: FormData): Prom
     if (product?.slug) {
         revalidatePath(`/products/${product.slug}`);
     }
+
+    redirect("/admin/products");
 }
 
 export async function deleteProduct(productId: string) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
+
+    // First delete related records (due to foreign key constraints)
+    await supabase.from("product_images").delete().eq("product_id", productId);
+    await supabase.from("inventory").delete().eq("product_id", productId);
+    await supabase.from("cart_items").delete().eq("product_id", productId);
+    await supabase.from("wishlist").delete().eq("product_id", productId);
 
     const { error } = await supabase
         .from("products")
@@ -105,6 +152,7 @@ export async function deleteProduct(productId: string) {
         .eq("id", productId);
 
     if (error) {
+        console.error("Delete product error:", error);
         return { error: error.message };
     }
 
@@ -113,7 +161,7 @@ export async function deleteProduct(productId: string) {
 }
 
 export async function toggleProductStatus(productId: string, isActive: boolean) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
         .from("products")
@@ -121,6 +169,7 @@ export async function toggleProductStatus(productId: string, isActive: boolean) 
         .eq("id", productId);
 
     if (error) {
+        console.error("Toggle status error:", error);
         return { error: error.message };
     }
 
